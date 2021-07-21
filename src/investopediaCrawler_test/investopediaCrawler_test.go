@@ -8,6 +8,7 @@ import (
 	"testing"
 )
 
+
 func TestInvestopediaCrawler(t *testing.T) {
 	results, err := investopediaCrawler.Fetch()
 	if err != nil {
@@ -19,8 +20,10 @@ func TestInvestopediaCrawler(t *testing.T) {
 	for _, doc := range results{
 		if doc != nil {
 			data = append(data, doc)
+			fmt.Printf("(%d)[%s]-[%d]\n", doc.DocId,doc.Author,doc.Updated)
 		}
 	}
+
 	fmt.Printf("抓取完成, 需要抓取%d条, 成功抓取%d条\n", len(results), len(data))
 	port := `:8080`
 	mux := http.NewServeMux()

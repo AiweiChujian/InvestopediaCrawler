@@ -3,7 +3,7 @@ package investopediaCrawler
 import (
 	"context"
 	"errors"
-	"golang.org/x/net/html"
+	"io"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -19,8 +19,7 @@ func fetchRequest(link string) (*http.Request, error) {
 	return req, err
 }
 
-func FetchLink(link string) (string, error)  {
-
+func FetchLink(link string) (_ string, err error)  {
 	req, err := fetchRequest(link)
 	if err != nil {
 		return "", err
@@ -31,7 +30,10 @@ func FetchLink(link string) (string, error)  {
 		if err1 != nil {
 			return nil, err1
 		}
-		c.SetDeadline(deadline)
+		err1 = c.SetDeadline(deadline)
+		if err1 != nil {
+			return nil, err1
+		}
 		return c, nil
 	}}}
 	var resp *http.Response
@@ -50,7 +52,9 @@ func FetchLink(link string) (string, error)  {
 		return "", errors.New("html request failed: "+ link)
 	}
 
-	defer resp.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err = Body.Close()
+	}(resp.Body)
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -59,19 +63,11 @@ func FetchLink(link string) (string, error)  {
 	return  string(body), nil
 }
 
-func isExistAtt(node *html.Node, att string) bool {
-	for _, attr := range node.Attr {
-		if attr.Key == att {
-			return true
-		}
-	}
-	return false
-}
 
 func trimNodeText(text string) string  {
 	return strings.TrimFunc(text, func(r rune) bool {
 		switch r {
-		case rune('\n'), rune(' '):
+		case '\n', ' ':
 			return  true
 		default:
 			return false

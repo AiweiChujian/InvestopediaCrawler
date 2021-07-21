@@ -7,7 +7,7 @@ import (
 // Fetch 抓取方法
 func Fetch() ([] *InvestopediaDoc, error) {
 	sourceUrl := "https://www.investopedia.com/blockchain-4689765"
-	body, err := fetchLink(sourceUrl)
+	body, err := FetchLink(sourceUrl)
 	if err != nil {
 		return  nil, err
 	}
@@ -39,7 +39,7 @@ func Fetch() ([] *InvestopediaDoc, error) {
 
 // 抓取详情页
 func fetchDetailFor(doc *InvestopediaDoc)  error {
-	html, err := fetchLink(doc.DetailLink)
+	html, err := FetchLink(doc.DetailLink)
 	if err != nil {
 		return err
 	}
