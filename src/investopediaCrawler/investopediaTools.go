@@ -19,14 +19,14 @@ func fetchRequest(link string) (*http.Request, error) {
 	return req, err
 }
 
-func fetchLink(link string) (string, error)  {
+func FetchLink(link string) (string, error)  {
 
 	req, err := fetchRequest(link)
 	if err != nil {
 		return "", err
 	}
 	client := &http.Client{Transport: &http.Transport{DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
-		deadline := time.Now().Add(30 * time.Second)
+		deadline := time.Now().Add(60 * time.Second)
 		c, err1 := net.DialTimeout(network, addr, time.Second*30)
 		if err1 != nil {
 			return nil, err1
@@ -35,6 +35,7 @@ func fetchLink(link string) (string, error)  {
 		return c, nil
 	}}}
 	var resp *http.Response
+
 	var reqErr error
 	counter := 0
 	for {
