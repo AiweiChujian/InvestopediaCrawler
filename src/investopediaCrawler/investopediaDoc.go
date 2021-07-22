@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/PuerkitoBio/goquery"
 	"golang.org/x/net/html"
+	"regexp"
 	"strconv"
 	"strings"
 )
@@ -103,6 +104,15 @@ func (doc *InvestopediaDoc) parseDocMetaWithDetail(htmlString string) (err error
 			if err != nil {
 				return err
 			}
+
+			rp := regexp.MustCompile(`(?U)url\(/static/.*\.(?:woff|woff2|ttf|svg)\)`)
+			urlItems := rp.FindAllString(css, -1)
+			for _, item := range urlItems {
+				absHead := "url("+ srcHost + "/static/"
+				newItem := strings.Replace(item, "url(/static/", absHead, 1)
+				css = strings.Replace(css, item, newItem, 1)
+			}
+
 			oldNode := cssLink.Nodes[0]
 			newNode := &html.Node{Type: html.ElementNode, Data: `style`}
 			newNode.Attr = []html.Attribute{{Key: `type`, Val: `text/css` }}
@@ -129,6 +139,19 @@ func (doc *InvestopediaDoc) parseDocMetaWithDetail(htmlString string) (err error
 	}
 
 	if bodySelection := dom.Find(`:root>body`).First(); len(bodySelection.Nodes) > 0 {
+
+		bodySelection.Find(`script[data-glb-js=bottom][src]~script`).Each(func(_ int, selection *goquery.Selection) {
+			scriptText := selection.Text()
+			rp := regexp.MustCompile(`(?s)Mntl\.utilities\.scriptsOnLoad\(document\.querySelectorAll\('script\[data-glb-js="bottom"]'\), function\(\) {(.*)}\);`)
+			if !rp.MatchString(scriptText) {
+				return
+			}
+			scriptNode := selection.Nodes[0]
+			scriptNode.RemoveChild(scriptNode.FirstChild)
+			trimScript := rp.FindStringSubmatch(scriptText)[1]
+			scriptNode.AppendChild(&html.Node{Type: html.TextNode, Data: trimScript})
+		})
+
 		// 替换bottom scripts
 		if bottomScript := bodySelection.Find(`body>script[data-glb-js=bottom][src]`).First(); len(bottomScript.Nodes) > 0 {
 			bottomScriptSrc, _ :=  bottomScript.Attr(`src`)
@@ -144,7 +167,7 @@ func (doc *InvestopediaDoc) parseDocMetaWithDetail(htmlString string) (err error
 			oldNode.Parent.RemoveChild(oldNode)
 		}
 	}
-
+	
 	// 获取正文内容
 	var buf bytes.Buffer
 	err = html.Render(&buf, root)
