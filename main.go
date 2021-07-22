@@ -1,11 +1,7 @@
 package main
 
-import (
-	"fmt"
-
-	cm "github.com/easierway/concurrent_map"
-)
+import "fmt"
 
 func main() {
-	fmt.Println(cm.CreateConcurrentMap(9))
+	fmt.Println(`Hello World!`)
 }

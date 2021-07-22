@@ -73,7 +73,7 @@ func (doc *InvestopediaDoc) parseDocMetaWithDetail(htmlString string) (err error
 		".article-sources.mntl-block", ".performance-marketing.mntl-block",
 		".related-recirc-section.mntl-block", ".textnote-placeholder.mntl-block",
 		".scads-to-load.right-rail__item", ".article-meta.mntl-block", ".article-header",
-		".breadcrumbs", ".mntl-leaderboard-header",
+		".breadcrumbs", ".mntl-leaderboard-header", `.article-left-nav`,
 	}
 	for _, class := range hideClassList {
 		dom.Find(class).Each(func(_ int, selection *goquery.Selection) {
@@ -167,7 +167,7 @@ func (doc *InvestopediaDoc) parseDocMetaWithDetail(htmlString string) (err error
 			oldNode.Parent.RemoveChild(oldNode)
 		}
 	}
-	
+
 	// 获取正文内容
 	var buf bytes.Buffer
 	err = html.Render(&buf, root)
@@ -223,6 +223,22 @@ func parseListPage(html string)(ret [] *InvestopediaDoc, err error) {
 			ret = append(ret, doc)
 		})
 	})
+
+	//appendLinks := []string {
+	//	`https://www.investopedia.com/tech/who-roger-ver-bitcoin-jesus/`,
+	//	`https://www.investopedia.com/best-crypto-exchanges-5071855`,
+	//	`https://www.investopedia.com/best-bitcoin-wallets-5070283`,
+	//	`https://www.investopedia.com/investing/top-healthcare-stocks/`,
+	//	`https://www.investopedia.com/terms/e/economicmoat.asp`,
+	//}
+	//for idx, link := range appendLinks {
+	//	doc := new(InvestopediaDoc)
+	//	doc.DocId = idx
+	//	doc.Title = "定向抓取" + strconv.Itoa(idx)
+	//	doc.DetailLink = link
+	//	doc.Author = "Aiwei"
+	//	ret = append(ret, doc)
+	//}
 
 	return ret, err
 }
